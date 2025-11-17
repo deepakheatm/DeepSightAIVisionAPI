@@ -1,0 +1,27 @@
+# DeepSight Vision API Service Requirements
+# Core AI and Computer Vision dependencies
+
+# Web Framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.5.0
+
+# Computer Vision and ML
+opencv-python>=4.8.0
+ultralytics>=8.0.0  # YOLO
+paddleocr==2.10.0
+paddlepaddle==3.0.0
+numpy>=1.24.0,<2.0.0
+
+# Semantic Matching (for text similarity)
+sentence-transformers>=2.2.0
+rapidfuzz>=3.0.0
+cachetools>=5.3.0
+
+# Image Processing
+Pillow>=10.0.0
+scipy>=1.11.0
+
+# Utilities
+python-multipart>=0.0.6  # For file uploads
+
