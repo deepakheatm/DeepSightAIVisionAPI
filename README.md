@@ -1,4 +1,4 @@
-# DeepSight Vision REST API - Installation & Usage Guide
+# DeepSight AI Vision REST API - Installation & Usage Guide
 
 Complete guide for installing, configuring, and using the DeepSight Vision REST API service for UI element detection with semantic text matching.
 
