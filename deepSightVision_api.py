@@ -616,20 +616,20 @@ class AIVisionCore:
             logger.error(f"Error decoding base64 image: {str(e)}")
             raise
     
-    def save_temp_image(self, img: np.ndarray, filename: str = "temp_screenshot.png") -> str:
-        """
-        Save numpy array image to temporary file
+    # def save_temp_image(self, img: np.ndarray, filename: str = "temp_screenshot.png") -> str:
+    #     """
+    #     Save numpy array image to temporary file
         
-        Args:
-            img: Numpy array image
-            filename: Output filename
+    #     Args:
+    #         img: Numpy array image
+    #         filename: Output filename
             
-        Returns:
-            Path to saved image
-        """
-        filepath = os.path.join(TEMP_DIR, filename)
-        cv2.imwrite(filepath, img)
-        return filepath
+    #     Returns:
+    #         Path to saved image
+    #     """
+    #     filepath = os.path.join(TEMP_DIR, filename)
+    #     cv2.imwrite(filepath, img)
+    #     return filepath
     
     def detect_ui_elements(
         self,
@@ -778,8 +778,12 @@ class AIVisionCore:
         logger.info(f"[OCR] Floating labels detected: {len([e for e in detected_elements if e['type'] == 'floating_label'])}")
         
         # Process non-text UI elements with YOLO
-        temp_path = self.save_temp_image(img)
-        results = self.model.predict(source=temp_path, conf=self.confidence_threshold)
+        
+        # temp_path = self.save_temp_image(img)
+        # results = self.model.predict(source=temp_path, conf=self.confidence_threshold)
+
+        # Pass numpy array directly to YOLO
+        results = self.model.predict(source=img, conf=self.confidence_threshold)
         
         for box in results[0].boxes:
             class_name = results[0].names[int(box.cls[0])]
