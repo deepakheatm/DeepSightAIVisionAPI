@@ -1,5 +1,5 @@
 """
-DeepSight Vision REST API Service
+DeepSight AI Vision REST API Service
 """
 
 import json
@@ -406,7 +406,7 @@ async def lifespan(app: FastAPI):
     
     # Startup
     try:
-        logger.info("Starting DeepSight Vision API...")
+        logger.info("Starting DeepSight AI Vision API...")
         
         # Get model path
         model_path = os.getenv(
@@ -420,7 +420,7 @@ async def lifespan(app: FastAPI):
             logger.error(f"Model file not found: {model_path}")
             raise FileNotFoundError(f"Model file not found: {model_path}")
         
-        # Initialize DeepSight Vision Core
+        # Initialize DeepSight AI Vision Core
         confidence_threshold = float(os.getenv("CONFIDENCE_THRESHOLD", "0.05"))
         ai_core = AIVisionCore(model_path, confidence_threshold)
         
@@ -440,7 +440,7 @@ async def lifespan(app: FastAPI):
         app.state.semantic_matcher = semantic_matcher
         app.state.semantic_config = semantic_config
         
-        logger.info("DeepSight Vision API started successfully")
+        logger.info("DeepSight AI Vision API started successfully")
         logger.info(f"Model path: {model_path}")
         logger.info(f"Confidence threshold: {confidence_threshold}")
         
@@ -451,20 +451,17 @@ async def lifespan(app: FastAPI):
     yield  # Application is running
     
     # Shutdown
-    logger.info("DeepSight Vision API shutting down")
+    logger.info("DeepSight AI Vision API shutting down")
 
 
 # Initialize FastAPI app with lifespan
 app = FastAPI(
-    title="DeepSight API",
+    title="DeepSight Vision API",
     description="General Purpose AI Computer Vision API for UI element detection",
     version="1.0.0",
     lifespan=lifespan
 )
 
-# Temporary directory for processing
-TEMP_DIR = "temp"
-os.makedirs(TEMP_DIR, exist_ok=True)
 
 
 # ============================================================================
@@ -564,15 +561,15 @@ class HealthResponse(BaseModel):
 
 
 # ============================================================================
-# DeepSight Vision Core Logic
+# DeepSight AI Vision Core Logic
 # ============================================================================
 
 class AIVisionCore:
-    """Core DeepSight Vision logic - no Playwright dependencies"""
+    """Core DeepSight AI Vision logic - no Playwright dependencies"""
     
     def __init__(self, model_path: str, confidence_threshold: float = 0.05):
         """
-        Initialize DeepSight Vision Core
+        Initialize DeepSight AI Vision Core
         
         Args:
             model_path: Path to YOLO model file
@@ -582,7 +579,7 @@ class AIVisionCore:
         self.confidence_threshold = confidence_threshold
         self.model = YOLO(model_path)
         self.paddle_ocr = PaddleOCR(use_angle_cls=True, lang="en")
-        logger.info(f"DeepSight Vision Core initialized with model: {model_path}")
+        logger.info(f"DeepSight AI Vision Core initialized with model: {model_path}")
     
     def decode_base64_image(self, base64_string: str) -> np.ndarray:
         """
@@ -615,21 +612,6 @@ class AIVisionCore:
         except Exception as e:
             logger.error(f"Error decoding base64 image: {str(e)}")
             raise
-    
-    # def save_temp_image(self, img: np.ndarray, filename: str = "temp_screenshot.png") -> str:
-    #     """
-    #     Save numpy array image to temporary file
-        
-    #     Args:
-    #         img: Numpy array image
-    #         filename: Output filename
-            
-    #     Returns:
-    #         Path to saved image
-    #     """
-    #     filepath = os.path.join(TEMP_DIR, filename)
-    #     cv2.imwrite(filepath, img)
-    #     return filepath
     
     def detect_ui_elements(
         self,
@@ -778,10 +760,6 @@ class AIVisionCore:
         logger.info(f"[OCR] Floating labels detected: {len([e for e in detected_elements if e['type'] == 'floating_label'])}")
         
         # Process non-text UI elements with YOLO
-        
-        # temp_path = self.save_temp_image(img)
-        # results = self.model.predict(source=temp_path, conf=self.confidence_threshold)
-
         # Pass numpy array directly to YOLO
         results = self.model.predict(source=img, conf=self.confidence_threshold)
         
@@ -903,7 +881,7 @@ class AIVisionCore:
 async def root():
     """Root endpoint"""
     return {
-        "name": "DeepSight Vision API",
+        "name": "DeepSight AI Vision API",
         "version": "1.0.0",
         "status": "running"
     }
@@ -940,7 +918,7 @@ async def analyze_page(request: AnalyzePageRequest):
         if request.confidence_threshold:
             ai_core.confidence_threshold = request.confidence_threshold
         
-        # Decode base64 image
+        # Decode base64 image (validates image format)
         img = ai_core.decode_base64_image(request.screenshot_base64)
         
         # Detect UI elements (YOLO + PaddleOCR)
@@ -949,7 +927,7 @@ async def analyze_page(request: AnalyzePageRequest):
             request.viewport_size.width,
             request.viewport_size.height
         )
-        
+            
         # Prepare base response
         text_elements = [e for e in detected_elements if e["type"] == "floating_label"]
         non_text_elements = [e for e in detected_elements if e["type"] == "non-text"]
@@ -997,7 +975,7 @@ async def analyze_page(request: AnalyzePageRequest):
                     method="direct",
                     reason="semantic_disabled"
                 )
-            
+                
             # Semantic fallback is allowed - perform hybrid matching
             logger.info(f"Performing semantic fallback for text='{request.text}'")
             
@@ -1031,7 +1009,7 @@ async def analyze_page(request: AnalyzePageRequest):
                     method="semantic",
                     reason="no_candidates_for_type"
                 )
-            
+                
             # Perform hybrid matching with context for better cache isolation
             cache_context = {
                 "tenant_id": request.tenant_id or "default",
@@ -1047,7 +1025,7 @@ async def analyze_page(request: AnalyzePageRequest):
                 context=cache_context,
                 use_multilingual=use_multilingual
             )
-            
+                
             if match_result["matched"]:
                 # Semantic match found - create semantic elements for ALL instances of the best match
                 best = match_result["best_candidate"]
@@ -1066,45 +1044,73 @@ async def analyze_page(request: AnalyzePageRequest):
                 logger.info(f"Found {len(matched_candidates)} instances of '{best['candidate_text']}' "
                            f"(ignoring other texts even if above threshold)")
                 
-                # Create semantic fallback element for EACH matched candidate
-                semantic_elements_created = []
+                # Enrich existing elements with semantic metadata (avoid duplicates!)
+                semantic_elements_enriched = []
                 for match in matched_candidates:
                     matched_candidate = match["candidate"]
                     
-                    semantic_element = {
-                        "text": request.text,
-                        "text_source": "semantic_fallback",
-                        "matched_candidate_text": matched_candidate.get("text"),
-                        "type": request.element_type,
-                        "x": matched_candidate.get("x"),
-                        "y": matched_candidate.get("y"),
-                        "width": matched_candidate.get("width"),
-                        "height": matched_candidate.get("height"),
-                        "x1": matched_candidate.get("x1"),
-                        "x2": matched_candidate.get("x2"),
-                        "y1": matched_candidate.get("y1"),
-                        "y2": matched_candidate.get("y2"),
-                        "scaled_center_x": matched_candidate.get("scaled_center_x"),
-                        "scaled_center_y": matched_candidate.get("scaled_center_y"),
-                        "confidence": matched_candidate.get("confidence"),
-                        "semantic_pct": match["semantic_pct"],
-                        "fuzzy_pct": match["fuzzy_pct"],
-                        "combined_pct": match["combined_pct"],
-                        "model": match_result["model"],
-                        "method": "semantic"
-                    }
+                    # Find the existing element in detected_elements
+                    # Match by text, type, and coordinates
+                    existing_element = None
+                    for elem in detected_elements:
+                        if (elem.get("text") == matched_candidate.get("text") and
+                            elem.get("type") == request.element_type and
+                            elem.get("x") == matched_candidate.get("x") and
+                            elem.get("y") == matched_candidate.get("y")):
+                            existing_element = elem
+                            break
                     
-                    # Append to detected_elements
-                    detected_elements.append(semantic_element)
-                    semantic_elements_created.append(semantic_element)
-                    
-                    # Update counts
-                    if request.element_type == "floating_label":
-                        text_elements.append(semantic_element)
-                    
-                    logger.info(f"Semantic match: {match['candidate_text']} -> {request.text} "
-                               f"at ({matched_candidate.get('x')}, {matched_candidate.get('y')}) "
-                               f"(combined_pct={match['combined_pct']})")
+                    if existing_element:
+                        # Enrich the existing element with semantic metadata
+                        existing_element["text_source"] = "semantic_query"
+                        existing_element["semantic_query"] = request.text
+                        existing_element["semantic_pct"] = match["semantic_pct"]
+                        existing_element["fuzzy_pct"] = match["fuzzy_pct"]
+                        existing_element["combined_pct"] = match["combined_pct"]
+                        existing_element["model"] = match_result["model"]
+                        existing_element["method"] = "semantic"
+                        
+                        semantic_elements_enriched.append(existing_element)
+                        
+                        logger.info(f"Semantic match: query='{request.text}' -> found='{match['candidate_text']}' "
+                                   f"at ({matched_candidate.get('x')}, {matched_candidate.get('y')}) "
+                                   f"(combined_pct={match['combined_pct']}) [enriched existing element]")
+                    else:
+                        # Element not found (shouldn't happen, but create new as fallback)
+                        logger.warning(f"Semantic match candidate not found in detected_elements, creating new element")
+                        
+                        semantic_element = {
+                            "text": matched_candidate.get("text"),
+                            "text_source": "semantic_query",
+                            "semantic_query": request.text,
+                            "type": request.element_type,
+                            "x": matched_candidate.get("x"),
+                            "y": matched_candidate.get("y"),
+                            "width": matched_candidate.get("width"),
+                            "height": matched_candidate.get("height"),
+                            "x1": matched_candidate.get("x1"),
+                            "x2": matched_candidate.get("x2"),
+                            "y1": matched_candidate.get("y1"),
+                            "y2": matched_candidate.get("y2"),
+                            "scaled_center_x": matched_candidate.get("scaled_center_x"),
+                            "scaled_center_y": matched_candidate.get("scaled_center_y"),
+                            "confidence": matched_candidate.get("confidence"),
+                            "semantic_pct": match["semantic_pct"],
+                            "fuzzy_pct": match["fuzzy_pct"],
+                            "combined_pct": match["combined_pct"],
+                            "model": match_result["model"],
+                            "method": "semantic"
+                        }
+                        
+                        detected_elements.append(semantic_element)
+                        semantic_elements_enriched.append(semantic_element)
+                        
+                        if request.element_type == "floating_label":
+                            text_elements.append(semantic_element)
+                        
+                        logger.info(f"Semantic match: query='{request.text}' -> found='{match['candidate_text']}' "
+                                   f"at ({matched_candidate.get('x')}, {matched_candidate.get('y')}) "
+                                   f"(combined_pct={match['combined_pct']}) [created new element]")
                 
                 return AnalyzePageResponse(
                     screenshot_size=screenshot_size,
@@ -1154,7 +1160,7 @@ async def analyze_page(request: AnalyzePageRequest):
                         "threshold": threshold
                     }
                 )
-        
+            
         # No text search requested - return standard response
         return AnalyzePageResponse(
             screenshot_size=screenshot_size,
@@ -1246,7 +1252,7 @@ async def find_element(request: FindElementRequest):
         if request.confidence_threshold:
             ai_core.confidence_threshold = request.confidence_threshold
         
-        # Decode base64 image
+        # Decode base64 image (validates image format)
         img = ai_core.decode_base64_image(request.screenshot_base64)
         
         # Detect UI elements
@@ -1291,10 +1297,10 @@ async def filter_elements(request: FilterElementsRequest):
         if request.confidence_threshold:
             ai_core.confidence_threshold = request.confidence_threshold
         
-        # Decode base64 image
+        # Decode base64 image (validates image format)
         img = ai_core.decode_base64_image(request.screenshot_base64)
         
-        # Detect UI elements
+        # Detect UI elements - YOLO accepts numpy array directly
         detected_elements = ai_core.detect_ui_elements(
             img,
             request.viewport_size.width,
@@ -1329,7 +1335,7 @@ if __name__ == "__main__":
     port = int(os.getenv("API_PORT", "8000"))
     host = os.getenv("API_HOST", "0.0.0.0")
     
-    logger.info(f"Starting DeepSight Vision API on {host}:{port}")
+    logger.info(f"Starting DeepSight AI Vision API on {host}:{port}")
     
     uvicorn.run(
         "deepSightVision_api:app",
@@ -1338,4 +1344,3 @@ if __name__ == "__main__":
         reload=False,
         log_level="info"
     )
-
