@@ -164,7 +164,7 @@ sudo usermod -aG docker $USER
 Create `Dockerfile` in your project root:
 
 ```dockerfile
-FROM python:3.12-slim
+FROM python:3.12-slim-bookworm
 
 # Set working directory
 WORKDIR /app
