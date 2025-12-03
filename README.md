@@ -438,8 +438,8 @@ curl http://localhost:8000/health
   "text": "Login",
   "element_type": "floating_label",
   "enable_semantic_match": true,
-  "semantic_threshold": 85.0,
-  "semantic_alpha": 0.7,
+  "semantic_threshold": 80.0,
+  "semantic_alpha": 0.9,
   "use_multilingual_model": false,
   "tenant_id": "customer_123",
   "request_id": "req_456"
@@ -473,17 +473,24 @@ curl http://localhost:8000/health
     {
       "type": "floating_label",
       "text": "Login",
-      "x": 100,
-      "y": 200,
-      "width": 150,
+      "x": 1467,
+      "y": 637,
+      "width": 88,
       "height": 40,
-      "x1": 100,
-      "y1": 200,
-      "x2": 250,
-      "y2": 240,
-      "scaled_center_x": 175,
-      "scaled_center_y": 220,
-      "confidence": 99.5
+      "confidence": 99.98944401741028,
+      "x1": 1467,
+      "x2": 1555,
+      "y1": 637,
+      "y2": 677,
+      "scaled_center_x": 1512,
+      "scaled_center_y": 650,
+      "text_source": "semantic_query",
+      "semantic_query": "SIGN IN",
+      "semantic_pct": 89.58,
+      "fuzzy_pct": 50,
+      "combined_pct": 85.62,
+      "model": "all-MiniLM-L6-v2",
+      "method": "semantic"
     },
     {
       "type": "non-text",
@@ -498,22 +505,31 @@ curl http://localhost:8000/health
       "y2": 350,
       "scaled_center_x": 200,
       "scaled_center_y": 325
-    }
-  ],
-  "total_text_elements": 15,
-  "total_non_text_elements": 5,
+    } ```
+ ],
+  "total_text_elements": 13,
+  "total_non_text_elements": 0,
   "matched": true,
   "method": "semantic",
+  "reason": null,
   "semantic_result": {
     "best_candidate": {
       "text": "Login",
-      "semantic_pct": 95.5,
-      "fuzzy_pct": 85.0,
-      "combined_pct": 92.35
+      "semantic_pct": 89.58,
+      "fuzzy_pct": 50,
+      "combined_pct": 85.62
     },
-    "total_matches": 2,
+    "total_matches": 1,
+    "matched_elements": [
+      {
+        "text": "Login",
+        "combined_pct": 85.62,
+        "position": "(1467, 637)"
+      }
+    ],
     "model": "all-MiniLM-L6-v2",
-    "threshold": 85.0
+    "alpha": 0.9,
+    "threshold": 80
   }
 }
 ```
