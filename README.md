@@ -462,7 +462,7 @@ curl http://localhost:8000/health
 | `tenant_id` |  No | string | Tenant identifier for cache isolation |
 | `request_id` |  No | string | Request ID for tracking/rollout |
 
-**Response:**
+**Sample Response:**
 ```json
 {
   "screenshot_size": {
@@ -494,17 +494,17 @@ curl http://localhost:8000/health
     },
     {
       "type": "non-text",
-      "class_name": "button",
-      "x": 100,
-      "y": 300,
-      "width": 200,
-      "height": 50,
-      "x1": 100,
-      "y1": 300,
-      "x2": 300,
-      "y2": 350,
-      "scaled_center_x": 200,
-      "scaled_center_y": 325
+      "class_name": "field",
+      "x": 724,
+      "y": 204,
+      "width": 471,
+      "height": 54,
+      "x1": 724,
+      "y1": 1195,
+      "x2": 204,
+      "y2": 258,
+      "scaled_center_x": 959,
+      "scaled_center_y": 230
     } ```
  ],
   "total_text_elements": 13,
