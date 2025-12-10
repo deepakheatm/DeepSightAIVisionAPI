@@ -435,7 +435,7 @@ curl http://localhost:8000/health
     "height": 1080
   },
   "confidence_threshold": 0.05,
-  "text": "Login",
+  "text": "SIGN IN",
   "element_type": "floating_label",
   "enable_semantic_match": true,
   "semantic_threshold": 80.0,
