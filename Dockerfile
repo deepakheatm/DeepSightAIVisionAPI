@@ -4,7 +4,7 @@ FROM python:3.12-slim
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies (compatible with Debian "bookworm"/"trixie")
+# Install system dependencies (compatible with Debian trixie/bookworm)
 RUN apt-get update && apt-get install -y \
     libgl1 \
     libglib2.0-0 \
@@ -24,8 +24,15 @@ RUN pip install --no-cache-dir -r requirements_api.txt
 # Copy application files
 COPY deepSightVision_api.py .
 
+
 # Copy trained models directory
 COPY trained_models/ ./trained_models/
+
+# Copy bootstrap script
+COPY bootstrap_models.py .
+
+# Pre-download OCR + semantic models during build
+RUN python bootstrap_models.py
 
 # Expose API port
 EXPOSE 8000
